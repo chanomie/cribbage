@@ -304,3 +304,13 @@ def cards_as_string(cards):
     
     return ','.join(card_display_list)
     
+def calculate_score_for_run_play(run, run_card):
+    run_play_score = 0
+    
+    # 2 points if you get 15 in the run
+    if run:
+      if run[-1].value + run_card.value == 15:
+        run_play_score += 2
+    
+    return run_play_score
+    

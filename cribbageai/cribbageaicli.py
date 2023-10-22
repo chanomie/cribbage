@@ -83,5 +83,6 @@ def print_all_cards(cribbage_game):
 def print_cards(cards):
     print(cribbageengine.cards_as_string(cards))
 
-setup()
-main()
+if __name__ == '__main__':
+    setup()
+    main()
