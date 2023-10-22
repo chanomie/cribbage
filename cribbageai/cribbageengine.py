@@ -129,6 +129,14 @@ class CribbageGame:
         self.start_card = set()        
         self.crib_turn = 1 # player 1
         self.run_turn = 2 # player 2
+
+    @staticmethod
+    def get_run_total(run):
+        run_total = 0
+        for card in run:
+            run_total += card.value
+
+        return run_total
       
     def deal_cards(self):
         self.player_one_hand = set()
@@ -190,7 +198,7 @@ class CribbageGame:
                 active_run_hand = self.player_two_run_hand
                 
             ## Test if the player can play a card and stay under 31
-            run_total = self.get_run_total();
+            run_total = get_run_total(run);
             logging.info("Checking if player #%i can play against run %i"
               % (self.run_turn, run_total))
                         
@@ -247,15 +255,6 @@ class CribbageGame:
             
                             
             self.run_turn = 2 if self.run_turn == 1 else 1
-            
-                
-    def get_run_total(self):
-        run_total = 0
-        for card in self.run:
-            run_total += card.value
-            
-        return run_total
-            
 
 class CribbageEngine:
     """
@@ -303,28 +302,52 @@ def cards_as_string(cards):
         card_display_list.append(card.get_display())
     
     return ','.join(card_display_list)
-    
+
 def calculate_score_for_run_play(run, run_card):
     run_play_score = 0
+    run_total = CribbageGame.get_run_total(run)
     
-    # 2 points if you get 15 in the run
     if run:
-      if run[-1].value + run_card.value == 15:
-        run_play_score += 2
-        
-      total_pairs = 0
-      pair_lookback = -1
-      while len(run) >= abs(pair_lookback) and run[pair_lookback].face == run_card.face:
-        total_pairs += 1
-        pair_lookback -= 1
-    
-      # starting pythong 3.8 you can use combinatorial, but this is lazy
-      if total_pairs == 1:
+        # 2 points if you get 15 or 31 in the run
+        if run_total + run_card.value == 15 or run_total + run_card.value == 31:
           run_play_score += 2
-      elif total_pairs == 2:
-          run_play_score += 6
-      elif total_pairs == 3:
-          run_play_score += 12
-
-    return run_play_score
+        
+        # 2 points for every pair.  This is a combinatorial function
+        total_pairs = 0
+        pair_lookback = -1
+        while len(run) >= abs(pair_lookback) and run[pair_lookback].face == run_card.face:
+            total_pairs += 1
+            pair_lookback -= 1
     
+        # starting pythong 3.8 you can use math.comb
+        if total_pairs == 1:
+            run_play_score += 2
+        elif total_pairs == 2:
+            run_play_score += 6
+        elif total_pairs == 3:
+            run_play_score += 12
+            
+        # 1 point for each card in a sequence, even if it's out of order
+        sequence_check_list = []
+        for card in run:
+            sequence_check_list.append(card.face.value)
+                
+        sequence_check_list.append(run_card.face.value)
+        while len(sequence_check_list) >= 3:
+            if _can_sort_to_sequence(sequence_check_list):
+                run_play_score += len(sequence_check_list)
+                del sequence_check_list[:]
+            else:
+                sequence_check_list.pop(0)
+
+    
+    return run_play_score
+
+def _can_sort_to_sequence(nums):
+    sorted_nums = sorted(nums)
+    
+    for i in range(1, len(sorted_nums)):
+        if sorted_nums[i] != sorted_nums[i - 1] + 1:
+            return False
+    
+    return True
