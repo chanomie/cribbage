@@ -311,6 +311,20 @@ def calculate_score_for_run_play(run, run_card):
     if run:
       if run[-1].value + run_card.value == 15:
         run_play_score += 2
+        
+      total_pairs = 0
+      pair_lookback = -1
+      while len(run) >= abs(pair_lookback) and run[pair_lookback].face == run_card.face:
+        total_pairs += 1
+        pair_lookback -= 1
     
+      # starting pythong 3.8 you can use combinatorial, but this is lazy
+      if total_pairs == 1:
+          run_play_score += 2
+      elif total_pairs == 2:
+          run_play_score += 6
+      elif total_pairs == 3:
+          run_play_score += 12
+
     return run_play_score
     
