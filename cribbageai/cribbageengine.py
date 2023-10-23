@@ -70,35 +70,22 @@ class PlayingCard:
 
     def get_face_display(self):
         """Gets a character for the face value for display purposes."""
-        face_display = ""
-        if self.face == Face.ACE:
-            face_display = "A"
-        if self.face == Face.TWO:
-            face_display = "2"
-        if self.face == Face.THREE:
-            face_display = "3"
-        if self.face == Face.FOUR:
-            face_display = "4"
-        if self.face == Face.FIVE:
-            face_display = "5"
-        if self.face == Face.SIX:
-            face_display = "6"
-        if self.face == Face.SEVEN:
-            face_display = "7"
-        if self.face == Face.EIGHT:
-            face_display = "8"
-        if self.face == Face.NINE:
-            face_display = "9"
-        if self.face == Face.TEN:
-            face_display = "10"
-        if self.face == Face.JACK:
-            face_display = "J"
-        if self.face == Face.QUEEN:
-            face_display = "Q"
-        if self.face == Face.KING:
-            face_display = "K"
 
-        return face_display
+        return {
+            Face.ACE: "A",
+            Face.TWO: "2",
+            Face.THREE: "3",
+            Face.FOUR: "4",
+            Face.FIVE: "5",
+            Face.SIX: "6",
+            Face.SEVEN: "7",
+            Face.EIGHT: "8",
+            Face.NINE: "9",
+            Face.TEN: "10",
+            Face.JACK: "J",
+            Face.QUEEN: "Q",
+            Face.KING: "K",
+          }.get(self.face)
 
     def get_display(self):
         """Gets a display that combines the face value and the suit."""
@@ -198,10 +185,16 @@ class CribbageGame:
 
     def discard_to_crib(self):
         """Allows both players to pick two cards to put into the crib."""
-        # TODO - should pass immutable hands to players and return
-        # cards.  Let the engine remove from hand and put in crib.
-        self.player_one.discard_to_crib(self.player_one_hand, self.crib)
-        self.player_two.discard_to_crib(self.player_two_hand, self.crib)
+        crib_cards = self.player_one.discard_to_crib(set(self.player_one_hand))
+        for crib_card in crib_cards:
+            self.crib.add(crib_card)
+            self.player_one_hand.remove(crib_card)
+
+        crib_cards = self.player_two.discard_to_crib(set(self.player_two_hand))
+        for crib_card in crib_cards:
+            self.crib.add(crib_card)
+            self.player_two_hand.remove(crib_card)
+
         logging.info("Discarded to Crib --")
         logging.info("P1 Hand: %s", cards_as_string(self.player_one_hand))
         logging.info("P2 Hand: %s", cards_as_string(self.player_two_hand))

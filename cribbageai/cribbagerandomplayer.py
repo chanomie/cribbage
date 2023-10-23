@@ -5,25 +5,25 @@ import random
 
 HIGHEST_RUN_ALLOWED = 31
 
-# TODO: The arguments passed in should be immutable.
-
 class RandomPlayer:
     """Provides a base implementation for a player that makes random choices.
     """
-    def discard_to_crib(self, player_hand, crib):
+    def discard_to_crib(self, player_hand):
         """Discards two cards randomly to the crib.
 
         Args:
             player_hand: A set of PlayingCard representing the hand
-            crib: The crib
+
+        Returns:
+           {PlayingCard, PlayingCard} two cards as a tuple
         """
 
-        card = random.sample(sorted(player_hand), 1)[0]
-        player_hand.remove(card)
-        crib.add(card)
-        card = random.sample(sorted(player_hand), 1)[0]
-        player_hand.remove(card)
-        crib.add(card)
+        card_one = random.sample(sorted(player_hand), 1)[0]
+        player_hand.remove(card_one)
+        card_two = random.sample(sorted(player_hand), 1)[0]
+        player_hand.remove(card_two)
+
+        return card_one, card_two
 
     # pylint: disable=unused-argument
     def get_run_card(self, player_run_hand, run, run_total):
