@@ -8,7 +8,6 @@ from cribbageai.cribbageengine import PlayingCard
 from cribbageai.cribbageengine import Face
 from cribbageai.cribbageengine import Suit
 
-# python3 -m unittest test.test_cribbageengine
 class TestCribbageScoringEngine(unittest.TestCase):
     """
     Unit Tests for various scoring mechanisms in the Cribbage Engine
@@ -147,7 +146,7 @@ class TestCribbageScoringEngine(unittest.TestCase):
 
         self.assertEqual(cribbageengine.calculate_score_for_hand(hand, start_card), 5)
 
-    # pylint: disable=W0212
+    # pylint: disable=protected-access
     def test_can_sort_cards_to_sequence_false(self):
         """ Tests internal sequence sorter check """
         hand = [PlayingCard(Suit.CLUB, Face.SEVEN, 7),
@@ -166,7 +165,7 @@ class TestCribbageScoringEngine(unittest.TestCase):
 
         self.assertTrue(cribbageengine._can_sort_cards_to_sequence(hand))
 
-    # pylint: enable=W0212
+    # pylint: enable=protected-access
 
 if __name__ == '__main__':
     unittest.main()
