@@ -2,13 +2,19 @@
 Unit testing class for the the CribbageEngine
 """
 
+import logging
 import unittest
+
 from cribbageai import cribbageengine
 from cribbageai.cribbageengine import PlayingCard
 from cribbageai.cribbageengine import Face
 from cribbageai.cribbageengine import Suit
 
 class TestCribbageScoringEngine(unittest.TestCase):
+    def setUp(self):
+        logging.basicConfig(filename='cribbageapp.log', level=logging.INFO,
+          format='%(asctime)s - %(levelname)s - %(message)s')
+
     """
     Unit Tests for various scoring mechanisms in the Cribbage Engine
     """
@@ -164,8 +170,35 @@ class TestCribbageScoringEngine(unittest.TestCase):
           PlayingCard(Suit.CLUB, Face.THREE, 3)]
 
         self.assertTrue(cribbageengine._can_sort_cards_to_sequence(hand))
-
     # pylint: enable=protected-access
+
+    def test_calculate_score_for_sequence_five(self):
+        hand = [PlayingCard(Suit.CLUB, Face.EIGHT, 8),
+          PlayingCard(Suit.SPADE, Face.JACK, 10),
+          PlayingCard(Suit.CLUB, Face.QUEEN, 10),
+          PlayingCard(Suit.HEART, Face.NINE, 9)]
+        start_card = PlayingCard(Suit.CLUB, Face.TEN, 10)
+
+        self.assertEqual(cribbageengine.calculate_score_for_hand(hand, start_card), 5)
+
+    def test_calculate_score_for_double_run(self):
+        hand = [PlayingCard(Suit.CLUB, Face.NINE, 9),
+          PlayingCard(Suit.SPADE, Face.JACK, 10),
+          PlayingCard(Suit.CLUB, Face.QUEEN, 10),
+          PlayingCard(Suit.HEART, Face.NINE, 9)]
+        start_card = PlayingCard(Suit.CLUB, Face.TEN, 10)
+
+        self.assertEqual(cribbageengine.calculate_score_for_hand(hand, start_card), 10)
+
+    def test_calculate_score_max(self):
+        hand = [PlayingCard(Suit.CLUB, Face.FIVE, 5),
+          PlayingCard(Suit.SPADE, Face.FIVE, 5),
+          PlayingCard(Suit.HEART, Face.FIVE, 5),
+          PlayingCard(Suit.DIAMOND, Face.JACK, 10)]
+        start_card = PlayingCard(Suit.DIAMOND, Face.FIVE, 5)
+
+        self.assertEqual(cribbageengine.calculate_score_for_hand(hand, start_card), 29)
+
 
 if __name__ == '__main__':
     unittest.main()

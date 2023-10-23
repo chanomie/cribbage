@@ -524,6 +524,26 @@ def calculate_score_for_hand(player_hand, start_card):
 
     ## Find the runs, but don't count sub-runs.  Runs are between 3-5 cards. If the
     ## larger run of 4-5 is scored, subruns should be ignored.
+    found_sequences = set()
+    for combination_size in reversed(range(3, len(player_full_hand)+1)):
+        combinations_set = list(combinations(player_full_hand, combination_size))
+        for combo in combinations_set:
+            if(_can_sort_cards_to_sequence(combo)):
+                # Test if this newly found sequence is a subset of an existing sequence
+                is_subsequence = False
+                for found_sequence in found_sequences:
+                    if set(combo) <= set(found_sequence):
+                        is_subsequence = True
+                        logging.info("Sequence [%s] is sub-sequence of [%s]",
+                          cards_as_string(combo), cards_as_string(found_sequence))
+
+                if not is_subsequence:
+                    sequence_play_score = len(combo)
+                    hand_play_score += sequence_play_score
+                    logging.info("Found sequence [%s] for [%s] gives total [%s]",
+                      cards_as_string(combo), sequence_play_score, hand_play_score)
+                    found_sequences.add(combo)
+
 
 
     return hand_play_score
