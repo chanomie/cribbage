@@ -138,7 +138,7 @@ class CribbageGame:
         self.crib = set()
         self.run = []
         self.go_player = 0
-        self.start_card = set()
+        self.start_card = None
         self.crib_turn = 1 # player 1
         self.run_turn = 2 # player 2
 
@@ -204,7 +204,7 @@ class CribbageGame:
         """Picks a random start card and check for his heels (2 points to dealer)"""
         card = random.sample(sorted(self.game_deck), 1)[0]
         self.game_deck.remove(card)
-        self.start_card.add(card)
+        self.start_card = card
         logging.info("Start Card: %s", card.get_display())
 
         ## If it's a jack, dealer gets 2 points
@@ -334,6 +334,18 @@ class CribbageGame:
 
         return points_for_card
 
+    def score_pone_hand(self):
+        """Sums up the score for the pone player."""
+        if self.crib_turn == 1:
+            hand_score = calculate_score_for_hand(list(self.player_two_hand), self.start_card)
+
+            self.player_two_score += hand_score
+        else:
+            hand_score = calculate_score_for_hand(list(self.player_two_hand), self.start_card)
+
+            self.player_one_score += hand_score
+
+
 class CribbageEngine:
     """
     Represents the main engine for storage and manipulation of the state of the game.
@@ -391,7 +403,8 @@ def cards_as_string(cards):
     """
     card_display_list = []
     for card in cards:
-        card_display_list.append(card.get_display())
+        if card is not None:
+            card_display_list.append(card.get_display())
 
     return ','.join(card_display_list)
 
@@ -456,14 +469,22 @@ def calculate_score_for_hand(player_hand, start_card):
         (int) the score for the hand
     """
 
+    logging.info("Calculating score for player hand [%s] with start card [%s]",
+      cards_as_string(player_hand), start_card.get_display())
+
     hand_play_score = 0
     player_full_hand = player_hand.copy()
 
     ## Check for His Nob Before Appending the Start Card
-    hand_play_score += _calculate_score_for_hand_his_nob(player_hand, start_card)
+    his_nob_score = _calculate_score_for_hand_his_nob(player_hand, start_card)
+    hand_play_score += his_nob_score
+    logging.info("His nob score [%s] gives total hand score [%s]",
+      his_nob_score, hand_play_score)
 
     ## Check for a flush and full flush before appending the start card
+    ## Todo: the crib must be a full flush
     is_flush = True
+    flush_play_score = 0
     temp_flush_suit = player_hand[0].suit
     for card in player_full_hand:
         if card.suit != temp_flush_suit:
@@ -471,9 +492,13 @@ def calculate_score_for_hand(player_hand, start_card):
 
     if is_flush:
         if temp_flush_suit == start_card.suit:
-            hand_play_score += 5
+            flush_play_score = 5
         else:
-            hand_play_score += 4
+            flush_play_score = 4
+
+    hand_play_score += flush_play_score
+    logging.info("Flush score [%s] gives total hand score [%s]",
+      flush_play_score, hand_play_score)
 
     player_full_hand.append(start_card)
 
@@ -484,6 +509,9 @@ def calculate_score_for_hand(player_hand, start_card):
             cards_total_value = CribbageGame.get_cards_total_value(combo)
             if cards_total_value == 15:
                 hand_play_score += 2
+                logging.info("Found 15 [%s] for 2 gives total hand score [%s]",
+                  cards_as_string(combo), hand_play_score)
+
 
     ## Find all pairs, they each are 2 points
     ## Triples, Quadruples can be ignored, they are just combinations of pairs
@@ -491,6 +519,8 @@ def calculate_score_for_hand(player_hand, start_card):
     for combo in combinations_set:
         if combo[0].face == combo[1].face:
             hand_play_score += 2
+            logging.info("Found pair [%s] for 2 gives total hand score [%s]",
+              cards_as_string(combo), hand_play_score)
 
     ## Find the runs, but don't count sub-runs.  Runs are between 3-5 cards. If the
     ## larger run of 4-5 is scored, subruns should be ignored.

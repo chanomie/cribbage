@@ -78,6 +78,11 @@ def new_game(cribbage_engine):
         print_all_cards(cribbage_game)
         print(f"Run Total: {cribbageengine.CribbageGame.get_cards_total_value(cribbage_game.run)}")
 
+    ## Score the Pone
+    print(f"## Score Pone Hand for Player (crib is #{cribbage_game.crib_turn})")
+    cribbage_game.score_pone_hand()
+    print_all_cards(cribbage_game)
+
 def print_all_cards(cribbage_game):
     """Prints to the screen the state of the game.
 
@@ -101,7 +106,7 @@ def print_all_cards(cribbage_game):
     print("Crib: ", end='')
     print_cards(cribbage_game.crib)
     print("Start: ", end='')
-    print_cards(cribbage_game.start_card)
+    print_cards([cribbage_game.start_card])
     print("Run: ", end='')
     print_cards(cribbage_game.run)
 
