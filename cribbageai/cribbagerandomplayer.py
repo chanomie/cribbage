@@ -7,10 +7,10 @@ HIGHEST_RUN_ALLOWED = 31
 
 class RandomPlayer:
     def discard_to_crib(self, player_hand, crib):
-        card = random.sample(player_hand, 1)[0]
+        card = random.sample(sorted(player_hand), 1)[0]
         player_hand.remove(card)
         crib.add(card)
-        card = random.sample(player_hand, 1)[0]
+        card = random.sample(sorted(player_hand), 1)[0]
         player_hand.remove(card)
         crib.add(card)
 
@@ -18,4 +18,3 @@ class RandomPlayer:
         for card in player_run_hand:
             if run_total + card.value <= HIGHEST_RUN_ALLOWED:
                 return card
-        

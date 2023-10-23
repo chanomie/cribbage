@@ -2,18 +2,16 @@ import cribbageengine
 import cribbagerandomplayer
 import logging
 
-#logging.basicConfig(filename='cribbageapp.log', level=logging.DEBUG, filemode='w', format='%(name)s - %(levelname)s - %(message)s')
-
 
 def setup():
-    logging.basicConfig(filename='cribbageapp.log', level=logging.DEBUG,
+    logging.basicConfig(filename='cribbageapp.log', level=logging.INFO,
       format='%(asctime)s - %(levelname)s - %(message)s')
     logging.info("Cribbage Cli Started")
-    
+
 def main():
     cribbage_engine = cribbageengine.CribbageEngine()
     main_menu(cribbage_engine)
-    
+
 def main_menu(cribbage_engine):
     menu_selection = -1
     while menu_selection != "0":
@@ -24,38 +22,38 @@ def main_menu(cribbage_engine):
         print("")
         print('  > ', end='')
         menu_selection = input()
-    
+
         if menu_selection == "1":
             new_game(cribbage_engine)
 
 def new_game(cribbage_engine):
     cribbage_game = cribbage_engine.new_game(
       cribbagerandomplayer.RandomPlayer(), cribbagerandomplayer.RandomPlayer())
-      
+
     ## Deal Cards
     print("## Fresh Game:")
     print_all_cards(cribbage_game)
-    
+
     print("## Dealing Cards:")
     cribbage_game.deal_cards()
     print_all_cards(cribbage_game)
-    
+
     ## Discard to Crib
     print("## Discard to Crib:")
     cribbage_game.discard_to_crib()
     print_all_cards(cribbage_game)
-    
+
     ## Pick Start Card
     print("## Cut Start Card:")
     cribbage_game.cut_start_card()
     print_all_cards(cribbage_game)
-    
+
     ## Play the Run
     while cribbage_game.is_more_run_cards():
         print("Run Turn: %i" % cribbage_game.run_turn)
         cribbage_game.play_next_run_card()
         print_all_cards(cribbage_game)
-        print("Run Total: %i" % cribbage_game.get_run_total())
+        print("Run Total: %i" % cribbageengine.CribbageGame.get_cards_total_value(cribbage_game.run))
 
 def print_all_cards(cribbage_game):
     print("")
@@ -77,7 +75,7 @@ def print_all_cards(cribbage_game):
     print_cards(cribbage_game.start_card)
     print("Run: ", end='')
     print_cards(cribbage_game.run)
-    
+
 
 
 def print_cards(cards):
@@ -85,4 +83,7 @@ def print_cards(cards):
 
 if __name__ == '__main__':
     setup()
-    main()
+    # main()
+    cribbage_engine = cribbageengine.CribbageEngine()
+    new_game(cribbage_engine)
+
