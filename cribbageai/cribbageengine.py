@@ -118,6 +118,8 @@ class PlayingCard:
     def __hash__(self):
         return hash(str(self.suit) + str(self.face))
 
+
+
 class CribbageGame:
     """Holds the state information for a game of cribbage.
 
@@ -234,64 +236,71 @@ class CribbageGame:
 
         This method will execute the next run card and update the state of the game.
         If there is no way to play a run card, then it will exit.
+
+        Returns:
+            (map): results of the play
+              run_turn: player number
+              is_go: is it a "go"
+              card_played: the card played
+              run_total: the run total
+              points_earned: the points earned.
+       Raises:
+            RuntimeError: if there are no more cards to play.  Check first using
+              the is_more_run_cards method.
         """
-        if self.is_more_run_cards():
-            # Set the following method variables for the run
-            # active_run_player - the AI for the active player
-            # active_run_hand - the active player's hand
+        if not self.is_more_run_cards():
+            raise RuntimeError("Cannot play if there are no more cards.")
+
+        # Tracks the result of the play
+        run_play_result = {}
+
+        # Set the following method variables for the run
+        # active_run_player - the AI for the active player
+        # active_run_hand - the active player's hand
+        run_play_result["run_turn"] = self.run_turn
+        run_play_result["points_earned"] = 0
+        if self.run_turn == 1:
+            active_run_player = self.player_one
+            active_run_hand = self.player_one_run_hand
+        else:
+            active_run_player = self.player_two
+            active_run_hand = self.player_two_run_hand
+
+        ## Test if the player can play a card and stay under 31
+        run_total = CribbageGame.get_cards_total_value(self.run)
+        logging.info("Checking if player #%i can play against run %i",
+          self.run_turn, run_total)
+
+        if self._can_play_card(active_run_hand):
+            result = self._play_run_card(active_run_player, active_run_hand)
+            run_play_result["is_go"] = False
+            run_play_result["card_played"] = result[0]
+            run_play_result["points_earned"] += result[1]
+        else:
+            run_play_result["is_go"] = True
+            self._play_call_go()
+
+
+        # The last card gets one more point
+        if not self.is_more_run_cards():
             if self.run_turn == 1:
-                active_run_player = self.player_one
-                active_run_hand = self.player_one_run_hand
+                self.player_one_score += 1
+                logging.info("Player #1 plays last card scores to total %i",
+                  (self.player_one_score))
             else:
-                active_run_player = self.player_two
-                active_run_hand = self.player_two_run_hand
-
-            ## Test if the player can play a card and stay under 31
-            run_total = CribbageGame.get_cards_total_value(self.run)
-            logging.info("Checking if player #%i can play against run %i",
-              self.run_turn, run_total)
-
-            if self._can_play_card(active_run_hand):
-                self._play_run_card(active_run_player, active_run_hand)
-
-            else:
-                logging.info("Player #%i cannot play against run %i",
-                  self.run_turn, run_total)
-
-                # The active player cannot play.
-                # If no one has said "Go" - the active player says "Go"
-                if self.go_player == 0:
-                    self.go_player = self.run_turn
-                    logging.info("Player #%i call a Go", self.run_turn)
-                    # The other player gets one point when Go happens.
-                    if self.run_turn == 1:
-                        self.player_two_score += 1
-                        logging.info("Player #2 scores to total %i", self.player_two_score)
-                    else:
-                        self.player_one_score += 1
-                        logging.info("Player #1 scores to total %i", self.player_one_score)
-
-                # If someone has said "Go" and it was the other player
-                # then reset the run
-                elif self.go_player != self.run_turn:
-                    self.run = []
-                    self.go_player = 0
-
-            # The last card gets one more point
-            if not self.is_more_run_cards():
-                if self.run_turn == 1:
-                    self.player_one_score += 1
-                    logging.info("Player #1 plays last card scores to total %i",
-                      (self.player_one_score))
-                else:
-                    self.player_two_score += 1
-                    logging.info("Player #2 plays last card scores to total %i",
-                      (self.player_two_score))
+                self.player_two_score += 1
+                logging.info("Player #2 plays last card scores to total %i",
+                  (self.player_two_score))
 
 
-            self.run_turn = 2 if self.run_turn == 1 else 1
+        self.run_turn = 2 if self.run_turn == 1 else 1
+        run_play_result["run_total"] = CribbageGame.get_cards_total_value(self.run)
+        return run_play_result
 
     def _can_play_card(self, active_run_hand):
+        """Checks if the hand has a card it is able to play.
+        It must stay under the maximum of 31.
+        """
         can_play_card = False
         run_total = CribbageGame.get_cards_total_value(self.run)
         logging.info("Checking if player #%i can play against run %i",
@@ -307,6 +316,15 @@ class CribbageGame:
         return can_play_card
 
     def _play_run_card(self, active_run_player, active_run_hand):
+        """Plays a card from the player onto the run.
+
+        Args:
+            active_run_player: the CribbagePlayer who plays
+            active_run_hand: the hand of cards the player has left
+        Returns:
+            (PlayingCard) the card played
+            (int) The points earned for the card
+        """
         run_total = CribbageGame.get_cards_total_value(self.run)
         logging.info("Player #%i can play against run %i",
           self.run_turn, run_total)
@@ -332,10 +350,36 @@ class CribbageGame:
         logging.info("Player #%i played %s, the run is now %s",
           self.run_turn, run_card.get_display(), cards_as_string(self.run))
 
-        return points_for_card
+        return run_card, points_for_card
+
+    def _play_call_go(self):
+        run_total = CribbageGame.get_cards_total_value(self.run)
+        logging.info("Player #%i cannot play against run %i",
+          self.run_turn, run_total)
+
+        # The active player cannot play.
+        # If no one has said "Go" - the active player says "Go"
+        if self.go_player == 0:
+            self.go_player = self.run_turn
+            logging.info("Player #%i call a Go", self.run_turn)
+            # The other player gets one point when Go happens.
+            if self.run_turn == 1:
+                self.player_two_score += 1
+                logging.info("Player #2 scores to total %i", self.player_two_score)
+            else:
+                self.player_one_score += 1
+                logging.info("Player #1 scores to total %i", self.player_one_score)
+
+        # If someone has said "Go" and it was the other player
+        # then reset the run
+        elif self.go_player != self.run_turn:
+            self.run = []
+            self.go_player = 0
+
 
     def score_pone_hand(self):
         """Sums up the score for the pone player."""
+        hand_score = 0
         if self.crib_turn == 1:
             hand_score = calculate_score_for_hand(list(self.player_two_hand), self.start_card)
 
@@ -344,6 +388,36 @@ class CribbageGame:
             hand_score = calculate_score_for_hand(list(self.player_two_hand), self.start_card)
 
             self.player_one_score += hand_score
+
+        return hand_score
+
+    def score_dealer_hand(self):
+        """Sums up the score for the dealer player."""
+        hand_score = 0
+        if self.crib_turn == 2:
+            hand_score = calculate_score_for_hand(list(self.player_two_hand), self.start_card)
+
+            self.player_two_score += hand_score
+        else:
+            hand_score = calculate_score_for_hand(list(self.player_two_hand), self.start_card)
+
+            self.player_one_score += hand_score
+
+        return hand_score
+
+    def score_dealer_crib(self):
+        """Sums up the score for the dealer player."""
+        hand_score = 0
+        if self.crib_turn == 2:
+            hand_score = calculate_score_for_hand(list(self.crib), self.start_card)
+
+            self.player_two_score += hand_score
+        else:
+            hand_score = calculate_score_for_hand(list(self.crib), self.start_card)
+
+            self.player_one_score += hand_score
+
+        return hand_score
 
 
 class CribbageEngine:
@@ -528,7 +602,7 @@ def calculate_score_for_hand(player_hand, start_card):
     for combination_size in reversed(range(3, len(player_full_hand)+1)):
         combinations_set = list(combinations(player_full_hand, combination_size))
         for combo in combinations_set:
-            if(_can_sort_cards_to_sequence(combo)):
+            if _can_sort_cards_to_sequence(combo):
                 # Test if this newly found sequence is a subset of an existing sequence
                 is_subsequence = False
                 for found_sequence in found_sequences:

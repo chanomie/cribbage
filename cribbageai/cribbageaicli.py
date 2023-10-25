@@ -53,35 +53,51 @@ def new_game(cribbage_engine):
     cribbage_game = cribbage_engine.new_game(
       cribbagerandomplayer.RandomPlayer(), cribbagerandomplayer.RandomPlayer())
 
-    ## Deal Cards
-    print("## Fresh Game:")
-    print_all_cards(cribbage_game)
+    print("# Fresh Game")
 
-    print("## Dealing Cards:")
     cribbage_game.deal_cards()
-    print_all_cards(cribbage_game)
+    print("## Dealing Cards")
 
-    ## Discard to Crib
-    print("## Discard to Crib:")
     cribbage_game.discard_to_crib()
-    print_all_cards(cribbage_game)
+    print("## Discard to Crib")
 
-    ## Pick Start Card
-    print("## Cut Start Card:")
     cribbage_game.cut_start_card()
-    print_all_cards(cribbage_game)
+    print(f"## Cut Start Card: {cribbageengine.cards_as_string([cribbage_game.start_card])}")
 
     ## Play the Run
     while cribbage_game.is_more_run_cards():
-        print(f"Run Turn: {cribbage_game.run_turn}")
-        cribbage_game.play_next_run_card()
-        print_all_cards(cribbage_game)
-        print(f"Run Total: {cribbageengine.CribbageGame.get_cards_total_value(cribbage_game.run)}")
+        #print(f"Run Turn: {cribbage_game.run_turn}")
+        run_result = cribbage_game.play_next_run_card()
+
+        if run_result["is_go"]:
+            print(f'  Player #{run_result["run_turn"]} calls a go')
+        else:
+            print(f"  Player #{run_result['run_turn']} plays " \
+              f"{cribbageengine.cards_as_string([run_result['card_played']])} " \
+              f"total {run_result['run_total']} for {run_result['points_earned']}")
+
+
+        # print_all_cards(cribbage_game)
+
+    ## Reveal Hands:
+    print(f"## Player 1 Hand: {cribbageengine.cards_as_string(cribbage_game.player_one_hand)}")
+    print(f"## Player 2 Hand: {cribbageengine.cards_as_string(cribbage_game.player_two_hand)}")
+    print(f"## Crib     Hand: {cribbageengine.cards_as_string(cribbage_game.crib)}")
+
 
     ## Score the Pone
-    print(f"## Score Pone Hand for Player (crib is #{cribbage_game.crib_turn})")
-    cribbage_game.score_pone_hand()
-    print_all_cards(cribbage_game)
+    pone_hand_score = cribbage_game.score_pone_hand()
+    print(f"## Score Pone Hand: {pone_hand_score}")
+
+    dealer_score = cribbage_game.score_dealer_hand()
+    print(f"## Score Dealer Hand: {dealer_score}")
+
+    crib_score = cribbage_game.score_dealer_crib()
+    print(f"## Score Dealer Crib: {crib_score}")
+
+    print(f"## End of Round 1")
+    print(f"  Player #1 Score: {cribbage_game.player_one_score}")
+    print(f"  Player #2 Score: {cribbage_game.player_two_score}")
 
 def print_all_cards(cribbage_game):
     """Prints to the screen the state of the game.
