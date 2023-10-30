@@ -91,6 +91,8 @@ class PlayingCard:
         """Gets a display that combines the face value and the suit."""
         return f"{self.get_face_display()}{self.get_suit_display()}"
 
+    def __str__(self):
+        return self.get_display()
 
     def __eq__(self, other):
         if not isinstance(other, PlayingCard):
@@ -348,11 +350,11 @@ class CribbageGame:
           cards_as_string(self.run))
 
         if self.run_turn == 1:
-            self.player_two_score += points_for_card
-            logging.info("Player #2 scores to total %i", self.player_two_score)
-        else:
             self.player_one_score += points_for_card
             logging.info("Player #1 scores to total %i", self.player_one_score)
+        else:
+            self.player_two_score += points_for_card
+            logging.info("Player #2 scores to total %i", self.player_two_score)
 
         active_run_hand.remove(run_card)
         self.run.append(run_card)

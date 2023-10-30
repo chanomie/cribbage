@@ -11,13 +11,13 @@ from cribbageai.cribbageengine import Face
 from cribbageai.cribbageengine import Suit
 
 class TestCribbageScoringEngine(unittest.TestCase):
+    """
+    Unit Tests for various scoring mechanisms in the Cribbage Engine
+    """
     def setUp(self):
         logging.basicConfig(filename='cribbageapp.log', level=logging.INFO,
           format='%(asctime)s - %(levelname)s - %(message)s')
 
-    """
-    Unit Tests for various scoring mechanisms in the Cribbage Engine
-    """
     def test_run_score_fifteen_two_cards(self):
         """ Tests that combination of two cards (5,10) will score 2 points. """
         run = [PlayingCard(Suit.CLUB, Face.FIVE, 5)]

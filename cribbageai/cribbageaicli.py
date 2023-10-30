@@ -47,7 +47,9 @@ def main_menu():
             player_one_victory = 0
             player_two_victory = 0
             for i in range(1, 100):
-                player_one_score, player_two_score = new_game(cribbageengine.CribbageEngine(), False)
+                player_one_score, player_two_score = new_game(
+                  cribbageengine.CribbageEngine(), False)
+
                 if player_one_score > player_two_score:
                     player_one_victory += 1
                 else:
@@ -80,7 +82,8 @@ def new_game(cribbage_engine, is_print_on):
 
         cribbage_game.cut_start_card()
         if is_print_on:
-            print(f"## Cut Start Card: {cribbageengine.cards_as_string([cribbage_game.start_card])}")
+            print(f"## Cut Start Card: " \
+              f"{cribbageengine.cards_as_string([cribbage_game.start_card])}")
 
         ## Play the Run
         while cribbage_game.is_more_run_cards():
@@ -98,9 +101,12 @@ def new_game(cribbage_engine, is_print_on):
 
         ## Reveal Hands:
         if is_print_on:
-            print(f"## Player 1 Hand: {cribbageengine.cards_as_string(cribbage_game.player_one_hand)}")
-            print(f"## Player 2 Hand: {cribbageengine.cards_as_string(cribbage_game.player_two_hand)}")
-            print(f"## Crib     Hand: {cribbageengine.cards_as_string(cribbage_game.crib)}")
+            print(f"## Player 1 Hand: " \
+              f"{cribbageengine.cards_as_string(cribbage_game.player_one_hand)}")
+            print(f"## Player 2 Hand: " \
+              f"{cribbageengine.cards_as_string(cribbage_game.player_two_hand)}")
+            print(f"## Crib     Hand: " \
+              f"{cribbageengine.cards_as_string(cribbage_game.crib)}")
 
 
         ## Score the Pone
