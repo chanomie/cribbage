@@ -8,7 +8,7 @@ state of the game as it progress.
 import logging
 
 import cribbageengine
-import cribbagerandomplayer
+import cribbageplayers
 
 def setup():
     """Performs initial environment setup.
@@ -65,7 +65,7 @@ def new_game(cribbage_engine, is_print_on):
         cribbage_engine: reference the cribbageengine.CribbageEngine to use.
     """
     cribbage_game = cribbage_engine.new_game(
-      cribbagerandomplayer.RandomPlayer(), cribbagerandomplayer.OptimizedPlayer())
+      cribbageplayers.RandomPlayer(), cribbageplayers.OptimizedPlayer())
 
     if is_print_on:
         print("# Fresh Game")
