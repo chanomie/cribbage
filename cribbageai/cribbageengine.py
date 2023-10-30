@@ -141,8 +141,8 @@ class CribbageGame:
         self.run = []
         self.go_player = 0
         self.start_card = None
-        self.crib_turn = 1 # player 1
-        self.run_turn = 2 # player 2
+        self.crib_turn = 0
+        self.run_turn = 0
 
     @staticmethod
     def get_cards_total_value(cards):
@@ -168,6 +168,16 @@ class CribbageGame:
         This will remove cards from game_deck and put them into player_one_hand
         and player_two_hand.
         """
+        self.game_deck = set(self._base_deck)
+
+        if self.crib_turn in (0, 2):
+            self.crib_turn = 1
+            self.run_turn = 2
+        else:
+            self.crib_turn = 2
+            self.run_turn = 1
+
+
         self.player_one_hand = set()
         self.player_two_hand = set()
         self.crib = set()

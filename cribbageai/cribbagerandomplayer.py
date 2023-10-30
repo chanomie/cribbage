@@ -2,6 +2,7 @@
 """
 
 import random
+import cribbageengine
 
 HIGHEST_RUN_ALLOWED = 31
 
@@ -41,3 +42,26 @@ class RandomPlayer:
 
         return None
     # pylint: enable=unused-argument
+
+class OptimizedPlayer(RandomPlayer):
+    """Provides a run optimized player"""
+    def get_run_card(self, player_run_hand, run, run_total):
+        """Selects a random valid card for the run
+
+        Args:
+            player_run_hand: The set of PlayingCards the player has in
+              their hand available to play.
+            run: the existing list of PlayingCards in the run
+            run_total: the total value in the run
+        """
+        best_card = None
+        best_points = 0
+        for run_card in player_run_hand:
+            if run_total + run_card.value <= HIGHEST_RUN_ALLOWED:
+                this_points = cribbageengine.calculate_score_for_run_play(run, run_card)
+                if this_points >= best_points:
+                    best_card = run_card
+
+        return best_card
+
+
