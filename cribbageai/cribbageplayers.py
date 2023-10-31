@@ -62,10 +62,11 @@ class OptimizedPlayer(RandomPlayer):
         for run_card in player_run_hand:
             if run_total + run_card.value <= HIGHEST_RUN_ALLOWED:
                 this_points = cribbageengine.calculate_score_for_run_play(run, run_card)
-
+                logging.debug("OptimizedPlayer Initial Review Card %s for Score %s", run_card, this_points)
 
                 # keep the total under 5 is good
-                # as is avoiding leaving a 5 or 10 run total
+                # as is avoiding leaving a 5 or 10 run total where the opponent
+                #   could try and get 15
                 if run_total + run_card.value < 5:
                     this_points += 0.5
                 elif run_total + run_card.value == 5:
@@ -73,10 +74,14 @@ class OptimizedPlayer(RandomPlayer):
                 elif run_total + run_card.value == 15:
                     this_points -= 0.3
 
+                # if the run total is less than 15, and the card takes it above
+                # 15 that helps to prevent opponent from getting a 15
                 if run_total < 15 < run_total + run_card.value:
-                    this_points -= 0.5
+                    this_points += 0.5
 
                 logging.debug("OptimizedPlayer Review Card %s for Score %s", run_card, this_points)
+                # Choose the card that gives the best points.  If there is a tie
+                # choose the largest card we can drop
                 if best_points is None or this_points > best_points:
                     best_card = run_card
                     best_points = this_points

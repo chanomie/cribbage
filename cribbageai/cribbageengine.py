@@ -513,21 +513,26 @@ def calculate_score_for_run_play(run, run_card):
     if run:
         # 2 points if you get 15 or 31 in the run
         if run_total + run_card.value == 15 or run_total + run_card.value == 31:
+            logging.debug("Adding 2 points for a 15 or 31")
             run_play_score += 2
 
         # 2 points for every pair.  This is a combinatorial function
         total_pairs = 0
         pair_lookback = -1
         while len(run) >= abs(pair_lookback) and run[pair_lookback].face == run_card.face:
+            logging.debug("Adding 1 pair to the count")
             total_pairs += 1
             pair_lookback -= 1
 
         # starting pythong 3.8 you can use math.comb
         if total_pairs == 1:
+            logging.debug("Adding 2 points for a pair")
             run_play_score += 2
         elif total_pairs == 2:
+            logging.debug("Adding 6 points for a double pair")
             run_play_score += 6
         elif total_pairs == 3:
+            logging.debug("Adding 12 points for a triple pair")
             run_play_score += 12
 
         # 1 point for each card in a sequence, even if it's out of order
