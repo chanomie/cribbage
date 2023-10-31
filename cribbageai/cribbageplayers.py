@@ -3,6 +3,8 @@
 
 import logging
 import random
+from itertools import combinations
+
 import cribbageengine
 
 HIGHEST_RUN_ALLOWED = 31
@@ -102,9 +104,54 @@ class OptimizedPlayer(RandomPlayer):
            {PlayingCard, PlayingCard} two cards as a tuple
         """
 
-        card_one = random.sample(sorted(player_hand), 1)[0]
+        # Get a deck of all potential cards not included in the hand
+        remaining_deck = cribbageengine.CribbageEngine().get_deck_copy()
+        for card in player_hand:
+            remaining_deck.remove(card)
+
+        logging.debug("Remaining Deck [%s]",
+          cribbageengine.cards_as_string(remaining_deck))
+
+        # Go through all combinations of discarding two cards
+        best_discard_score = 0
+        card_one = None
+        card_two = None
+        combinations_set = list(combinations(player_hand, 2))
+        for combo in combinations_set:
+            player_hand_copy = player_hand.copy()
+            player_discard = set()
+            for discard_card in combo:
+              player_hand_copy.remove(discard_card)
+              player_discard.add(discard_card)
+
+            logging.debug("Calculate Hand Value For: %s",
+              cribbageengine.cards_as_string(player_hand_copy))
+            logging.debug("Calculate Crib Value For: %s",
+              cribbageengine.cards_as_string(player_discard))
+            average_score = self._calculate_average_hand_score(player_hand_copy, remaining_deck)
+
+            if average_score > best_discard_score or card_one is None:
+              card_one = combo[0]
+              card_two = combo[1]
+              best_discard_score = average_score
+
+        logging.info("Discard best option [%s] with score [%s]",
+          cribbageengine.cards_as_string([card_one,card_two]), best_discard_score)
         player_hand.remove(card_one)
-        card_two = random.sample(sorted(player_hand), 1)[0]
         player_hand.remove(card_two)
 
         return card_one, card_two
+
+    def _calculate_average_hand_score(self, player_hand, remaining_deck):
+        iteration = 0
+        total_score = 0
+        for run_card in remaining_deck:
+            iteration += 1
+            total_hand_score = cribbageengine.calculate_score_for_hand(list(player_hand), run_card)
+
+            total_score += total_hand_score
+
+        logging.info("Total Iterations %s has total score %s (%s)", iteration,
+          total_score, total_score / iteration)
+
+        return total_score / iteration

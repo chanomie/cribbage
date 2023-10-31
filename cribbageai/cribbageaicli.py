@@ -15,7 +15,7 @@ def setup():
 
     Sets the logging configuration.
     """
-    logging.basicConfig(filename='cribbageapp.log', level=logging.INFO,
+    logging.basicConfig(filename='cribbageapp.log', level=logging.WARN,
       format='%(asctime)s - %(levelname)s - %(message)s')
     logging.info("Cribbage Cli Started")
 
@@ -27,28 +27,52 @@ def main():
 def main_menu():
     """Displays the main menu.
 
-    Args:
-        cribbage_engine: reference the engine to use.
     """
     menu_selection = -1
+    cribbage_engine = cribbageengine.CribbageEngine()
     while menu_selection != "0":
         print("  ----- Main Menu -----")
         print("  Please make a choice:")
         print("  0. Quit")
         print("  1. Play Random Game")
-        print("  2. Play 20 Games")
+        print("  2. Play 1000 Games - Randon v. Random")
+        print("  3. Play 100 Games - Randon v. Best")
         print("")
         print('  > ', end='')
         menu_selection = input()
 
         if menu_selection == "1":
-            new_game(cribbageengine.CribbageEngine(), True)
+            cribbage_game = cribbage_engine.new_game(
+              cribbageplayers.RandomPlayer(), cribbageplayers.OptimizedPlayer())
+
+            run_game(cribbage_game, True)
+
         elif menu_selection == "2":
             player_one_victory = 0
             player_two_victory = 0
-            for i in range(1, 100):
-                player_one_score, player_two_score = new_game(
-                  cribbageengine.CribbageEngine(), False)
+            for i in range(0, 1000):
+                cribbage_game = cribbage_engine.new_game(
+                  cribbageplayers.RandomPlayer(), cribbageplayers.RandomPlayer())
+
+                player_one_score, player_two_score = run_game(
+                  cribbage_game, False)
+
+                if player_one_score > player_two_score:
+                    player_one_victory += 1
+                else:
+                    player_two_victory += 1
+
+            print(f"Results is Player 1 {player_one_victory} to Player 2 {player_two_victory}")
+
+        elif menu_selection == "3":
+            player_one_victory = 0
+            player_two_victory = 0
+            for i in range(0, 100):
+                cribbage_game = cribbage_engine.new_game(
+                  cribbageplayers.RandomPlayer(), cribbageplayers.OptimizedPlayer())
+
+                player_one_score, player_two_score = run_game(
+                  cribbage_game, False)
 
                 if player_one_score > player_two_score:
                     player_one_victory += 1
@@ -58,14 +82,12 @@ def main_menu():
             print(f"Results is Player 1 {player_one_victory} to Player 2 {player_two_victory}")
 
 
-def new_game(cribbage_engine, is_print_on):
-    """Creates and runs a new game.
+def run_game(cribbage_game, is_print_on):
+    """Runs a new game.
 
     Args:
-        cribbage_engine: reference the cribbageengine.CribbageEngine to use.
+        cribbage_game: reference the cribbageengine.CribbageGame to use.
     """
-    cribbage_game = cribbage_engine.new_game(
-      cribbageplayers.RandomPlayer(), cribbageplayers.OptimizedPlayer())
 
     if is_print_on:
         print("# Fresh Game")

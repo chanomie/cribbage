@@ -26,7 +26,6 @@ class Suit(Enum):
     SPADE = 3
     HEART = 4
 
-
 class Face(Enum):
     """Provides the thirteen card faces."""
     ACE = 1
@@ -42,7 +41,6 @@ class Face(Enum):
     JACK = 11
     QUEEN = 12
     KING = 13
-
 
 class PlayingCard:
     """
@@ -96,15 +94,17 @@ class PlayingCard:
 
     def __eq__(self, other):
         if not isinstance(other, PlayingCard):
-            # don't attempt to compare against unrelated types
-            return NotImplemented
+            raise NotImplementedError
 
         return self.suit == other.suit and self.face == other.face
 
+    def __hash__(self):
+        return hash((self.suit, self.face))
+
     def __lt__(self, other):
         if not isinstance(other, PlayingCard):
-            # don't attempt to compare against unrelated types
-            return NotImplemented
+            raise NotImplementedError
+
 
         if self.face.value < other.face.value:
             return True
@@ -116,9 +116,6 @@ class PlayingCard:
             return True
 
         return False
-
-    def __hash__(self):
-        return hash(str(self.suit) + str(self.face))
 
 
 
@@ -462,7 +459,7 @@ class CribbageEngine:
             init_deck.add(PlayingCard(suit, Face.QUEEN, 10))
             init_deck.add(PlayingCard(suit, Face.KING, 10))
 
-        self._base_deck = frozenset(init_deck)
+        self.base_deck = frozenset(init_deck)
         logging.info("CribbageEngine initialized")
 
 
@@ -475,7 +472,12 @@ class CribbageEngine:
         Returns:
             (CribbageGame) a new instance of a game
         """
-        return CribbageGame(self._base_deck, player_one, player_two)
+        return CribbageGame(self.base_deck, player_one, player_two)
+
+    def get_deck_copy(self):
+        """Returns a copy of the full base deck."""
+
+        return set(self.base_deck)
 
 
 ## Static Helper Methods
